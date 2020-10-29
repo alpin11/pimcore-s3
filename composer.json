@@ -1,0 +1,25 @@
+{
+    "name": "alpin11/pimcore-s3",
+    "description": "Pimcore Setup for AWS sS3",
+    "type": "pimcore-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ALPIN 11 GmbH",
+            "email": "developers@alpin11.dev"
+        }
+    ],
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "require": {
+        "pimcore/pimcore": "^6",
+        "aws/aws-sdk-php": "^3.158",
+        "symfony/symfony": "^4.4",
+        "php": "^7.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "PimcoreS3Bundle\\": "src/"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+services:
+    _defaults:
+        public: true
+
+    PimcoreS3Bundle\EventListener\AssetListener:
+        arguments:
+            - '@pimcore_s3.client.cloudfront'
+            - '%pimcore_s3.base_url%'
+            - '%pimcore_s3.pimcore_directory.tmp%'
+            - '%pimcore_s3.pimcore_directory.asset%'
+            - '%pimcore_s3.cloudfront.enabled%'
+            - '%pimcore_s3.cloudfront.base_url%'
+            - '%pimcore_s3.cloudfront.id%'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    pimcore_s3.client.cloudfront:
+        class: PimcoreS3Bundle\Client\CloudFrontClient
+        arguments:
+            - '%pimcore_s3.cloudfront.client.version%'
+            - '%pimcore_s3.region%'
+            - '%pimcore_s3.credentials.access_key_id%'
+            - '%pimcore_s3.credentials.secret_access_key%'
