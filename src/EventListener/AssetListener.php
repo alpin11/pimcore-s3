@@ -104,9 +104,9 @@ class AssetListener implements EventSubscriberInterface
                 $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
             } else {
                 if ($this->cloudfrontEnabled) {
-                    $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->s3TmpUrlPrefix . "/", $fileSystemPath);
-                } else {
                     $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cloudfrontBaseUrl . "/", $fileSystemPath);
+                } else {
+                    $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->s3TmpUrlPrefix . "/", $fileSystemPath);
                 }
             }
         }
