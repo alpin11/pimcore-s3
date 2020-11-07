@@ -15,7 +15,7 @@ Add to  `composer.json`
 
 After that install package
 
-```shell script
+```
 composer require alpin11/pimcore-s3:dev-master
 ```
 
