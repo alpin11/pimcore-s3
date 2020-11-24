@@ -108,6 +108,8 @@ class AssetListener implements EventSubscriberInterface
                 } else {
                     $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->s3TmpUrlPrefix . "/", $fileSystemPath);
                 }
+                
+                Cache::save($path, $cacheKey);
             }
         }
 
