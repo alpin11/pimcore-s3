@@ -35,9 +35,9 @@ class PimcoreS3Extension extends Extension
         $container->setParameter('pimcore_s3.credentials.secret_access_key', $config['credentials']['secret_access_key']);
         $container->setParameter('pimcore_s3.pimcore_directory.tmp', $tmpDirectory);
         $container->setParameter('pimcore_s3.pimcore_directory.asset', $assetDirectory);
+        $container->setParameter('pimcore_s3.cdn.enabled', $config['cdn']['enabled']);
+        $container->setParameter('pimcore_s3.cdn.domain', $config['cdn']['domain']);
         $container->setParameter('pimcore_s3.cloudfront.enabled', $config['cloudfront']['enabled']);
-        $container->setParameter('pimcore_s3.cloudfront.base_url', $config['cloudfront']['base_url']);
-        $container->setParameter('pimcore_s3.cloudfront.origin_path', $config['cloudfront']['origin_path']);
         $container->setParameter('pimcore_s3.cloudfront.id', $config['cloudfront']['id']);
         $container->setParameter('pimcore_s3.cloudfront.client.version', $config['cloudfront']['client']['version']);
 
