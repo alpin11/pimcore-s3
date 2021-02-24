@@ -60,7 +60,7 @@ class AssetListener implements EventSubscriberInterface
         string $baseUrl,
         string $tmpUrl,
         string $assetUrl,
-        bool $cloudfrontEnabled = null,
+        bool $cloudfrontEnabled = false,
         string $cloudfrontDistributionId = null,
         bool $cdnEnabled = false,
         string $cdnDomain = null
