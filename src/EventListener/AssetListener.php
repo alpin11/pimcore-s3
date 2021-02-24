@@ -36,10 +36,7 @@ class AssetListener implements EventSubscriberInterface
      * @var bool
      */
     private $cloudfrontEnabled;
-    /**
-     * @var string
-     */
-    private $cloudfrontBaseUrl;
+
     /**
      * @var CloudFrontClient
      */
@@ -48,24 +45,35 @@ class AssetListener implements EventSubscriberInterface
      * @var string
      */
     private $cloudfrontDistributionId;
+    /**
+     * @var bool
+     */
+    private $cdnEnabled;
+
+    /**
+     * @var string|null
+     */
+    private $cdnDomain;
 
     public function __construct(
         CloudFrontClient $cloudFrontClient,
         string $baseUrl,
         string $tmpUrl,
         string $assetUrl,
-        bool $cloudfrontEnabled,
-        string $cloudfrontBaseUrl,
-        string $cloudfrontDistributionId
+        bool $cloudfrontEnabled = false,
+        string $cloudfrontDistributionId = null,
+        bool $cdnEnabled = false,
+        string $cdnDomain = null
     )
     {
         $this->baseUrl = $baseUrl;
         $this->s3TmpUrlPrefix = $this->baseUrl . str_replace("s3:/", "", $tmpUrl);
         $this->s3AssetUrlPrefix = $this->baseUrl . str_replace("s3:/", "", $assetUrl);
         $this->cloudfrontEnabled = $cloudfrontEnabled;
-        $this->cloudfrontBaseUrl = $cloudfrontBaseUrl;
         $this->cloudFrontClient = $cloudFrontClient;
         $this->cloudfrontDistributionId = $cloudfrontDistributionId;
+        $this->cdnEnabled = $cdnEnabled;
+        $this->cdnDomain = $cdnDomain;
     }
 
     /**
@@ -103,12 +111,12 @@ class AssetListener implements EventSubscriberInterface
                 // the thumbnail doesn't exist yet, so we need to create it on request -> Thumbnail controller plugin
                 $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
             } else {
-                if ($this->cloudfrontEnabled) {
-                    $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cloudfrontBaseUrl . "/", $fileSystemPath);
+                if ($this->cdnEnabled) {
+                    $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cdnDomain . "/", $fileSystemPath);
                 } else {
                     $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->s3TmpUrlPrefix . "/", $fileSystemPath);
                 }
-                
+
                 Cache::setForceImmediateWrite(true);
                 Cache::save($path, $cacheKey);
             }
@@ -140,8 +148,8 @@ class AssetListener implements EventSubscriberInterface
     {
         $asset = $event->getSubject();
 
-        if ($this->cloudfrontEnabled) {
-            $path = str_replace(PIMCORE_ASSET_DIRECTORY . "/", $this->cloudfrontBaseUrl . "/", $asset->getFileSystemPath());
+        if ($this->cdnEnabled) {
+            $path = str_replace(PIMCORE_ASSET_DIRECTORY . "/", $this->cdnDomain . "/", $asset->getFileSystemPath());
         } else {
             $path = str_replace(PIMCORE_ASSET_DIRECTORY . "/", $this->s3AssetUrlPrefix . "/", $asset->getFileSystemPath());
         }
