@@ -22,7 +22,7 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->children()
                 ->scalarNode('bucket_name')->cannotBeEmpty()->end()
-                ->scalarNode('region')->cannotBeEmpty()->end()
+                ->scalarNode('region')->defaultValue('eu-central-1')->cannotBeEmpty()->end()
                 ->arrayNode('credentials')
                     ->addDefaultsIfNotSet()
                     ->children()
