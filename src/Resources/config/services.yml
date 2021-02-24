@@ -9,8 +9,9 @@ services:
             - '%pimcore_s3.pimcore_directory.tmp%'
             - '%pimcore_s3.pimcore_directory.asset%'
             - '%pimcore_s3.cloudfront.enabled%'
-            - '%pimcore_s3.cloudfront.base_url%'
             - '%pimcore_s3.cloudfront.id%'
+            - '%pimcore_s3.cdn.enabled%'
+            - '%pimcore_s3.cdn.domain%'
         tags:
             - { name: kernel.event_subscriber }
 
