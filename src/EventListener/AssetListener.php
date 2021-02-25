@@ -21,39 +21,42 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @var string
      */
-    private $baseUrl;
+    protected $baseUrl;
 
     /**
      * @var string
      */
-    private $s3TmpUrlPrefix;
+    protected $s3TmpUrlPrefix;
 
     /**
      * @var string
      */
-    private $s3AssetUrlPrefix;
+    protected $s3AssetUrlPrefix;
+    
     /**
      * @var bool
      */
-    private $cloudfrontEnabled;
+    protected $cloudfrontEnabled;
 
     /**
      * @var CloudFrontClient
      */
-    private $cloudFrontClient;
+    protected $cloudFrontClient;
+    
     /**
      * @var string
      */
-    private $cloudfrontDistributionId;
+    protected $cloudfrontDistributionId;
+    
     /**
      * @var bool
      */
-    private $cdnEnabled;
+    protected $cdnEnabled;
 
     /**
      * @var string|null
      */
-    private $cdnDomain;
+    protected $cdnDomain;
 
     public function __construct(
         CloudFrontClient $cloudFrontClient,
