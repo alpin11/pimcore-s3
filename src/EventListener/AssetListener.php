@@ -5,6 +5,7 @@ namespace PimcoreS3Bundle\EventListener;
 
 
 use Aws\Exception\AwsException;
+use Aws\S3\S3Client;
 use Pimcore\Cache;
 use Pimcore\Event\AssetEvents;
 use Pimcore\Event\FrontendEvents;
@@ -32,7 +33,7 @@ class AssetListener implements EventSubscriberInterface
      * @var string
      */
     protected $s3AssetUrlPrefix;
-    
+
     /**
      * @var bool
      */
@@ -42,12 +43,12 @@ class AssetListener implements EventSubscriberInterface
      * @var CloudFrontClient
      */
     protected $cloudFrontClient;
-    
+
     /**
      * @var string
      */
     protected $cloudfrontDistributionId;
-    
+
     /**
      * @var bool
      */
@@ -58,8 +59,22 @@ class AssetListener implements EventSubscriberInterface
      */
     protected $cdnDomain;
 
+    /**
+     * @var S3Client
+     */
+    protected $s3Client;
+
+    /**
+     * @var string
+     */
+    private $bucketName;
+
     public function __construct(
         CloudFrontClient $cloudFrontClient,
+        string $region,
+        string $accessKeyId,
+        string $secretAccessKey,
+        string $bucketName,
         string $baseUrl,
         string $tmpUrl,
         string $assetUrl,
@@ -77,6 +92,15 @@ class AssetListener implements EventSubscriberInterface
         $this->cloudfrontDistributionId = $cloudfrontDistributionId;
         $this->cdnEnabled = $cdnEnabled;
         $this->cdnDomain = $cdnDomain;
+        $this->bucketName = $bucketName;
+        $this->s3Client = new S3Client([
+            'version' => 'latest',
+            'region' => $region,
+            'credentials' => [
+                'key' => $accessKeyId,
+                'secret' => $secretAccessKey,
+            ],
+        ]);
     }
 
     /**
@@ -110,7 +134,7 @@ class AssetListener implements EventSubscriberInterface
         $path = Cache::load($cacheKey);
 
         if (!$path) {
-            if (!file_exists($fileSystemPath)) {
+            if (!$this->s3Client->doesObjectExist($this->bucketName, $fileSystemPath)) {
                 // the thumbnail doesn't exist yet, so we need to create it on request -> Thumbnail controller plugin
                 $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
             } else {
