@@ -26,3 +26,11 @@ services:
             - '%pimcore_s3.region%'
             - '%pimcore_s3.credentials.access_key_id%'
             - '%pimcore_s3.credentials.secret_access_key%'
+
+    pimcore_s3.client.s3: '@PimcoreS3Bundle\Client\S3Client'
+    PimcoreS3Bundle\Client\S3Client:
+        arguments:
+            - '%pimcore_s3.region%'
+            - '%pimcore_s3.credentials.access_key_id%'
+            - '%pimcore_s3.credentials.secret_access_key%'
+            - '%pimcore_s3.region%'
