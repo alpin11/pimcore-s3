@@ -134,7 +134,8 @@ class AssetListener implements EventSubscriberInterface
         $path = Cache::load($cacheKey);
 
         if (!$path) {
-            if (!$this->s3Client->doesObjectExist($this->bucketName, $fileSystemPath)) {
+            $key = str_replace("s3://" . $this->bucketName . "/", '', $fileSystemPath);
+            if (!$this->s3Client->doesObjectExist($this->bucketName, $key)) {
                 // the thumbnail doesn't exist yet, so we need to create it on request -> Thumbnail controller plugin
                 $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
             } else {
