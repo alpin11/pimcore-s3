@@ -38,6 +38,7 @@ jobs:
                 with:
                     php_version: 8
                     version: 2
+                    memory_limit: -1
                     command: install --no-scripts --ignore-platform-reqs
             -   name: Run php check code with reviewdog
                 uses: GeneaLabs/action-reviewdog-phpmd@1.0.0
@@ -68,6 +69,7 @@ jobs:
                 with:
                     php_version: 8
                     version: 2
+                    memory_limit: -1
                     command: install --no-scripts --ignore-platform-reqs
             -   name: Run php check code with reviewdog
                 uses: GeneaLabs/action-reviewdog-phpstan@1.0.0
