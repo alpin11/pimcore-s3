@@ -14,7 +14,7 @@
     "require": {
         "pimcore/pimcore": "dev-master",
         "aws/aws-sdk-php": "^3.158",
-        "symfony/symfony": "^4.4",
+        "symfony/symfony": "^5.2.0",
         "php": "^8"
     },
     "autoload": {
