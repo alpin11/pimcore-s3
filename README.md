@@ -57,17 +57,30 @@ $s3Client->registerStreamWrapper();
 Add the following content to `/config/pimcore/constants.php`
 
 ```php
-$bucketName = $_ENV['AWS_S3_BUCKET_NAME'];
-$fileWrapperPrefix = 's3://' . $bucketName ;
-$s3BaseUrl = sprintf("https://s3.%s.amazonaws.com", $_ENV['AWS_S3_REGION']);
+<?php
 
-define('PIMCORE_ASSET_DIRECTORY', $fileWrapperPrefix . '/assets');
-define('PIMCORE_TEMPORARY_DIRECTORY', $fileWrapperPrefix . '/tmp');
-define("PIMCORE_TRANSFORMED_ASSET_URL", $s3BaseUrl . "/" . $bucketName . "/assets");
-define("PIMCORE_VERSION_DIRECTORY", $fileWrapperPrefix . "/versions");
-define("PIMCORE_RECYCLEBIN_DIRECTORY", $fileWrapperPrefix . "/recyclebin");
-define("PIMCORE_LOG_MAIL_PERMANENT", $fileWrapperPrefix . "/email");
-define("PIMCORE_LOG_FILEOBJECT_DIRECTORY", $fileWrapperPrefix . "/fileobjects");
+use Symfony\Component\Dotenv\Dotenv;
+
+
+// load .env file if available
+$dotEnvFile = PIMCORE_PROJECT_ROOT . '/.env';
+if (file_exists($dotEnvFile)) {
+    (new Dotenv())->load($dotEnvFile);
+}
+
+if (isset($_ENV['AWS_S3_BUCKET_NAME'])){
+    $bucketName = $_ENV['AWS_S3_BUCKET_NAME'];
+    $fileWrapperPrefix = 's3://' . $bucketName ;
+    $s3BaseUrl = sprintf("https://s3.%s.amazonaws.com", $_ENV['AWS_S3_REGION']);
+
+    define('PIMCORE_ASSET_DIRECTORY', $fileWrapperPrefix . '/assets');
+    define('PIMCORE_TEMPORARY_DIRECTORY', $fileWrapperPrefix . '/tmp');
+    define("PIMCORE_TRANSFORMED_ASSET_URL", $s3BaseUrl . "/" . $bucketName . "/assets");
+    define("PIMCORE_VERSION_DIRECTORY", $fileWrapperPrefix . "/versions");
+    define("PIMCORE_RECYCLEBIN_DIRECTORY", $fileWrapperPrefix . "/recyclebin");
+    define("PIMCORE_LOG_MAIL_PERMANENT", $fileWrapperPrefix . "/email");
+    define("PIMCORE_LOG_FILEOBJECT_DIRECTORY", $fileWrapperPrefix . "/fileobjects");
+}
 ```
 
 ## Environment Variables
@@ -75,11 +88,15 @@ define("PIMCORE_LOG_FILEOBJECT_DIRECTORY", $fileWrapperPrefix . "/fileobjects");
 Those environment variables must be set
 
 ```dotenv
-AWS_ACCESS_KEY_ID=<access-key-id>
-AWS_SECRET_ACCESS_KEY=<secret-access-key>
+AWS_S3_BUCKET_NAME=project-name-bucket
+AWS_S3_REGION=eu-central-1
+AWS_S3_VERSION=latest
 
-AWS_S3_REGION=<default-region>
-AWS_S3_BUCKET_NAME=<bucket-name>
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+
+AWS_CLOUDFRONT_URL=https://cdn.PROJECTNAME.com
+AWS_CLOUDFRONT_DISTRIBUTION_ID=
 ```
 
 ### Configuration Reference
@@ -88,16 +105,15 @@ Add the following content to `/config/config.yml`
 
 ```yaml
 pimcore_s3:
-    bucket_name:          ~
-    region:               ~
+    bucket_name: '%env(AWS_S3_BUCKET_NAME)%'
+    region: '%env(AWS_S3_REGION)%'
     credentials:
-        access_key_id:        ~
-        secret_access_key:    ~
+        access_key_id: '%env(AWS_ACCESS_KEY_ID)%'
+        secret_access_key: '%env(AWS_SECRET_ACCESS_KEY)%'
+    cdn:
+        enabled: true
+        domain: '%env(AWS_CLOUDFRONT_URL)%'
     cloudfront:
-        enabled:              false
-        base_url:             ~
-        origin_path:          null
-        id:                   null
-        client:
-            version:              latest
+        enabled: true
+        id: '%env(AWS_CLOUDFRONT_DISTRIBUTION_ID)%'
 ```
