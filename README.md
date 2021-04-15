@@ -13,7 +13,7 @@ Add to  `composer.json`
 ],
 ```
 
-After that install package
+##Installation Pimcore X
 
 ```
 composer require alpin11/pimcore-s3:dev-master
@@ -21,7 +21,7 @@ composer require alpin11/pimcore-s3:dev-master
 
 ## Pimcore Setup 
 
-Add following content to `/app/startup.php`
+Add following content to `/config/pimcore/startup.php`
 
 ```php
 <?php
@@ -54,7 +54,7 @@ $s3Client->registerStreamWrapper();
 
 ```
 
-Add the following content to `/app/constants.php`
+Add the following content to `/config/pimcore/constants.php`
 
 ```php
 $bucketName = $_ENV['AWS_S3_BUCKET_NAME'];
@@ -83,6 +83,8 @@ AWS_S3_BUCKET_NAME=<bucket-name>
 ```
 
 ### Configuration Reference
+
+Add the following content to `/config/config.yml`
 
 ```yaml
 pimcore_s3:

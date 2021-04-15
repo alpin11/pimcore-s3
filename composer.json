@@ -12,10 +12,10 @@
     "prefer-stable": true,
     "minimum-stability": "dev",
     "require": {
-        "pimcore/pimcore": "^6",
+        "pimcore/pimcore": "dev-master",
         "aws/aws-sdk-php": "^3.158",
         "symfony/symfony": "^4.4",
-        "php": "^7.2"
+        "php": "^8"
     },
     "autoload": {
         "psr-4": {
