@@ -8,7 +8,7 @@ Add to  `composer.json`
 "repositories": [
     {
       "type": "vcs",
-      "url": "https://bitbucket.org/alpin11gmbh/pimcores3bundle.git"
+      "url": "https://github.com/alpin11/pimcore-s3.git"
     }
 ],
 ```
