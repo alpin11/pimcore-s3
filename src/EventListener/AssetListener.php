@@ -175,6 +175,10 @@ class AssetListener implements EventSubscriberInterface
     public function onFrontEndPathAsset(GenericEvent $event)
     {
         $asset = $event->getSubject();
+        
+        if ($asset instanceof Asset\Folder) {
+            return;
+        }
 
         if ($this->cdnEnabled) {
             $path = str_replace(PIMCORE_ASSET_DIRECTORY . "/", $this->cdnDomain . "/", $asset->getFileSystemPath());
@@ -191,6 +195,10 @@ class AssetListener implements EventSubscriberInterface
     public function onAssetPostUpdate(AssetEvent $event)
     {
         $asset = $event->getAsset();
+        
+        if ($asset instanceof Asset\Folder) {
+            return;
+        }
 
         if ($this->cloudfrontEnabled) {
             $this->invalidateCloudfrontCache($asset);
