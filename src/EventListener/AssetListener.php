@@ -127,7 +127,8 @@ class AssetListener implements EventSubscriberInterface
      */
     public function onFrontendPathThumbnail(GenericEvent $event)
     {
-        // rewrite the path for the frontend
+        /** @var Asset\Image\Thumbnail $subject */
+        $subject = $event->getSubject();
         $fileSystemPath = $event->getSubject()->getFileSystemPath();
 
         $cacheKey = "thumb_s3_" . md5($fileSystemPath);
@@ -136,8 +137,28 @@ class AssetListener implements EventSubscriberInterface
         if (!$path) {
             $key = str_replace("s3://" . $this->bucketName . "/", '', $fileSystemPath);
             if (!$this->s3Client->doesObjectExist($this->bucketName, $key)) {
-                // the thumbnail doesn't exist yet, so we need to create it on request -> Thumbnail controller plugin
-                $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
+
+                if (PHP_SAPI === 'cli') {
+                    // cant pass to controller
+                    $image = $subject->getAsset();
+                    if ($image instanceof Asset\Image) {
+                        $thumbnail = $image->getThumbnail($subject->getConfig(), false);
+
+                        $fsPath = $thumbnail->getFileSystemPath();
+
+                        if ($this->cdnEnabled) {
+                            $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cdnDomain . "/", $fsPath);
+                        } else {
+                            $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->s3TmpUrlPrefix . "/", $fsPath);
+                        }
+
+
+                        Cache::setForceImmediateWrite(true);
+                        Cache::save($path, $cacheKey);
+                    }
+                } else {
+                    $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
+                }
             } else {
                 if ($this->cdnEnabled) {
                     $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cdnDomain . "/", $fileSystemPath);
