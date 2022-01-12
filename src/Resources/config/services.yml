@@ -2,8 +2,14 @@ services:
     _defaults:
         public: true
 
+    PimcoreS3Bundle\Service\CloudFrontService:
+        arguments:
+            - '@pimcore_s3.client.cloudfront'
+            - '%pimcore_s3.cloudfront.id%'
+
     PimcoreS3Bundle\EventListener\AssetListener:
         arguments:
+            - '@PimcoreS3Bundle\Service\CloudFrontService'
             - '@pimcore_s3.client.cloudfront'
             - '%pimcore_s3.region%'
             - '%pimcore_s3.credentials.access_key_id%'

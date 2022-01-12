@@ -1,22 +1,18 @@
 <?php
 
-
 namespace PimcoreS3Bundle\DependencyInjection;
-
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-
 class PimcoreS3Extension extends Extension
 {
-
     /**
      * @inheritDoc
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration([], $container), $configs);
 
