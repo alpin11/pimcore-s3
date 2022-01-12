@@ -26,20 +26,18 @@ class CloudFrontService
     }
 
     /**
-     * @param \Pimcore\Model\Element\ElementInterface $object
+     * @param string $path
      *
      * @return void
      */
-    public function invalidateCloudfrontCache(ElementInterface $object): void
+    public function invalidateCloudfrontCache(string $path): void
     {
         $request = [
             'DistributionId' => $this->cloudfrontDistributionId,
             'InvalidationBatch' => [
                 'CallerReference' => uniqid(),
                 'Paths' => [
-                    'Items' => [
-                        $object->getRealFullPath(),
-                    ],
+                    'Items' => [$path],
                     'Quantity' => 1
                 ]
             ]
