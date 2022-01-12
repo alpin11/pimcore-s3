@@ -4,7 +4,6 @@ namespace PimcoreS3Bundle\Service;
 
 use Aws\Exception\AwsException;
 use Pimcore\Logger;
-use Pimcore\Model\Element\ElementInterface;
 use PimcoreS3Bundle\Client\CloudFrontClient;
 
 class CloudFrontService
@@ -26,18 +25,18 @@ class CloudFrontService
     }
 
     /**
-     * @param string $path
+     * @param string[] $paths
      *
      * @return void
      */
-    public function invalidateCloudfrontCache(string $path): void
+    public function invalidateCloudfrontCache(array $paths): void
     {
         $request = [
             'DistributionId' => $this->cloudfrontDistributionId,
             'InvalidationBatch' => [
                 'CallerReference' => uniqid(),
                 'Paths' => [
-                    'Items' => [$path],
+                    'Items' => $paths,
                     'Quantity' => 1
                 ]
             ]

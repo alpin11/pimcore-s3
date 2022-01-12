@@ -206,7 +206,7 @@ class AssetListener implements EventSubscriberInterface
         }
 
         if ($this->cloudfrontEnabled) {
-            $this->cloudFrontService->invalidateCloudfrontCache($asset->getRealFullPath());
+            $this->cloudFrontService->invalidateCloudfrontCache([$asset->getRealFullPath()]);
         }
     }
 
@@ -218,7 +218,7 @@ class AssetListener implements EventSubscriberInterface
         $asset = $event->getAsset();
 
         if ($this->cloudfrontEnabled) {
-            $this->cloudFrontService->invalidateCloudfrontCache($asset->getRealFullPath());
+            $this->cloudFrontService->invalidateCloudfrontCache([$asset->getRealFullPath()]);
         }
     }
 }
