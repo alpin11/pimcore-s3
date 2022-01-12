@@ -10,7 +10,7 @@ class CloudFrontService
 {
     private CloudFrontClient $cloudFrontClient;
 
-    private ?string $cloudfrontDistributionId = null;
+    private string $cloudfrontDistributionId;
 
     /**
      * @param \PimcoreS3Bundle\Client\CloudFrontClient $cloudFrontClient
@@ -18,7 +18,7 @@ class CloudFrontService
      */
     public function __construct(
         CloudFrontClient $cloudFrontClient,
-        string $cloudfrontDistributionId = null
+        string $cloudfrontDistributionId
     ) {
         $this->cloudFrontClient = $cloudFrontClient;
         $this->cloudfrontDistributionId = $cloudfrontDistributionId;
