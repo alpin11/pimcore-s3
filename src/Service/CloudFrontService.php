@@ -29,10 +29,12 @@ class CloudFrontService
      *
      * @return void
      */
-    public function invalidateCloudfrontCache(array $paths): void
-    {
+    public function invalidateCloudfrontCache(
+        array $paths,
+        ?string $cloudfrontDistributionIdOverride = null
+    ): void {
         $request = [
-            'DistributionId' => $this->cloudfrontDistributionId,
+            'DistributionId' => !empty($cloudfrontDistributionIdOverride) ? $cloudfrontDistributionIdOverride : $this->cloudfrontDistributionId,
             'InvalidationBatch' => [
                 'CallerReference' => uniqid(),
                 'Paths' => [
