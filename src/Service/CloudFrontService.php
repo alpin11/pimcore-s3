@@ -39,7 +39,7 @@ class CloudFrontService
                 'CallerReference' => uniqid(),
                 'Paths' => [
                     'Items' => $paths,
-                    'Quantity' => 1
+                    'Quantity' => count($paths),
                 ]
             ]
         ];
