@@ -14,8 +14,7 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "pimcore/pimcore": "^6.0 || ^10.0",
-        "aws/aws-sdk-php": "^3.158",
-        "symfony/symfony": "^5.2.0"
+        "aws/aws-sdk-php": "^3.158"
     },
     "autoload": {
         "psr-4": {
