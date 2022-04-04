@@ -1,75 +1,59 @@
 <?php
 
-
 namespace PimcoreS3Bundle\EventListener;
 
-
-use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 use Pimcore\Cache;
 use Pimcore\Event\AssetEvents;
 use Pimcore\Event\FrontendEvents;
 use Pimcore\Event\Model\AssetEvent;
-use Pimcore\Logger;
 use Pimcore\Model\Asset;
 use PimcoreS3Bundle\Client\CloudFrontClient;
+use PimcoreS3Bundle\Service\CloudFrontService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 class AssetListener implements EventSubscriberInterface
 {
+    private CloudFrontService $cloudFrontService;
+
+    protected CloudFrontClient $cloudFrontClient;
+
+    protected S3Client $s3Client;
+
+    protected string $baseUrl;
+
+    protected string $s3TmpUrlPrefix;
+
+    protected string $s3AssetUrlPrefix;
+
+    protected bool $cloudfrontEnabled;
+
+    protected ?string $cloudfrontDistributionId;
+
+    protected bool $cdnEnabled;
+
+    protected ?string $cdnDomain;
+
+    private string $bucketName;
 
     /**
-     * @var string
+     * @param \PimcoreS3Bundle\Service\CloudFrontService $cloudFrontService
+     * @param \PimcoreS3Bundle\Client\CloudFrontClient $cloudFrontClient
+     * @param string $region
+     * @param string $accessKeyId
+     * @param string $secretAccessKey
+     * @param string $bucketName
+     * @param string $baseUrl
+     * @param string $tmpUrl
+     * @param string $assetUrl
+     * @param bool $cloudfrontEnabled
+     * @param string|null $cloudfrontDistributionId
+     * @param bool $cdnEnabled
+     * @param string|null $cdnDomain
      */
-    protected $baseUrl;
-
-    /**
-     * @var string
-     */
-    protected $s3TmpUrlPrefix;
-
-    /**
-     * @var string
-     */
-    protected $s3AssetUrlPrefix;
-
-    /**
-     * @var bool
-     */
-    protected $cloudfrontEnabled;
-
-    /**
-     * @var CloudFrontClient
-     */
-    protected $cloudFrontClient;
-
-    /**
-     * @var string
-     */
-    protected $cloudfrontDistributionId;
-
-    /**
-     * @var bool
-     */
-    protected $cdnEnabled;
-
-    /**
-     * @var string|null
-     */
-    protected $cdnDomain;
-
-    /**
-     * @var S3Client
-     */
-    protected $s3Client;
-
-    /**
-     * @var string
-     */
-    private $bucketName;
-
     public function __construct(
+        CloudFrontService $cloudFrontService,
         CloudFrontClient $cloudFrontClient,
         string $region,
         string $accessKeyId,
@@ -82,8 +66,8 @@ class AssetListener implements EventSubscriberInterface
         string $cloudfrontDistributionId = null,
         bool $cdnEnabled = false,
         string $cdnDomain = null
-    )
-    {
+    ) {
+        $this->cloudFrontService = $cloudFrontService;
         $this->baseUrl = $baseUrl;
         $this->s3TmpUrlPrefix = $this->baseUrl . str_replace("s3:/", "", $tmpUrl);
         $this->s3AssetUrlPrefix = $this->baseUrl . str_replace("s3:/", "", $assetUrl);
@@ -106,7 +90,7 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @inheritDoc
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             FrontendEvents::ASSET_IMAGE_THUMBNAIL => 'onFrontendPathThumbnail',
@@ -125,9 +109,10 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @param GenericEvent $event
      */
-    public function onFrontendPathThumbnail(GenericEvent $event)
+    public function onFrontendPathThumbnail(GenericEvent $event): void
     {
-        // rewrite the path for the frontend
+        /** @var Asset\Image\Thumbnail $subject */
+        $subject = $event->getSubject();
         $fileSystemPath = $event->getSubject()->getFileSystemPath();
 
         $cacheKey = "thumb_s3_" . md5($fileSystemPath);
@@ -136,8 +121,28 @@ class AssetListener implements EventSubscriberInterface
         if (!$path) {
             $key = str_replace("s3://" . $this->bucketName . "/", '', $fileSystemPath);
             if (!$this->s3Client->doesObjectExist($this->bucketName, $key)) {
-                // the thumbnail doesn't exist yet, so we need to create it on request -> Thumbnail controller plugin
-                $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
+
+                if (PHP_SAPI === 'cli') {
+                    // cant pass to controller
+                    $image = $subject->getAsset();
+                    if ($image instanceof Asset\Image) {
+                        $thumbnail = $image->getThumbnail($subject->getConfig(), false);
+
+                        $fsPath = $thumbnail->getFileSystemPath();
+
+                        if ($this->cdnEnabled) {
+                            $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cdnDomain . "/", $fsPath);
+                        } else {
+                            $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->s3TmpUrlPrefix . "/", $fsPath);
+                        }
+
+
+                        Cache::setForceImmediateWrite(true);
+                        Cache::save($path, $cacheKey);
+                    }
+                } else {
+                    $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/image-thumbnails", "", $fileSystemPath);
+                }
             } else {
                 if ($this->cdnEnabled) {
                     $path = str_replace(PIMCORE_TEMPORARY_DIRECTORY . "/", $this->cdnDomain . "/", $fileSystemPath);
@@ -156,7 +161,7 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @param GenericEvent $event
      */
-    public function onAssetThumbnailCreated(GenericEvent $event)
+    public function onAssetThumbnailCreated(GenericEvent $event): void
     {
         $thumbnail = $event->getSubject();
 
@@ -172,9 +177,13 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @param GenericEvent $event
      */
-    public function onFrontEndPathAsset(GenericEvent $event)
+    public function onFrontEndPathAsset(GenericEvent $event): void
     {
         $asset = $event->getSubject();
+
+        if ($asset instanceof Asset\Folder) {
+            return;
+        }
 
         if ($this->cdnEnabled) {
             $path = str_replace(PIMCORE_ASSET_DIRECTORY . "/", $this->cdnDomain . "/", $asset->getFileSystemPath());
@@ -188,64 +197,28 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @param AssetEvent $event
      */
-    public function onAssetPostUpdate(AssetEvent $event)
+    public function onAssetPostUpdate(AssetEvent $event): void
     {
         $asset = $event->getAsset();
 
+        if ($asset instanceof Asset\Folder) {
+            return;
+        }
+
         if ($this->cloudfrontEnabled) {
-            $this->invalidateCloudfrontCache($asset);
+            $this->cloudFrontService->invalidateCloudfrontCache([$asset->getRealFullPath()]);
         }
     }
 
     /**
      * @param AssetEvent $event
      */
-    public function onAssetPreDelete(AssetEvent $event)
+    public function onAssetPreDelete(AssetEvent $event): void
     {
         $asset = $event->getAsset();
 
         if ($this->cloudfrontEnabled) {
-            $this->invalidateCloudfrontCache($asset);
+            $this->cloudFrontService->invalidateCloudfrontCache([$asset->getRealFullPath()]);
         }
     }
-
-    /**
-     * @param Asset $asset
-     */
-    private function invalidateCloudfrontCache(Asset $asset)
-    {
-        $request = [
-            'DistributionId' => $this->cloudfrontDistributionId,
-            'InvalidationBatch' => [
-                'CallerReference' => uniqid(),
-                'Paths' => [
-                    'Items' => [
-                        $asset->getRealFullPath(),
-                    ],
-                    'Quantity' => 1
-                ]
-            ]
-        ];
-
-        Logger::info('invalidation request', [
-            'request' => $request
-        ]);
-
-        try {
-            $res = $this->cloudFrontClient->createInvalidation($request);
-
-            $message = '';
-
-            if (isset($res['Location'])) {
-                $message = 'The invalidation location is: ' . $res['Location'];
-            }
-
-            $message .= ' and the effective URI is ' . $res['@metadata']['effectiveUri'] . '.';
-
-            Logger::info($message);
-        } catch (AwsException $e) {
-            Logger::err('could not create invalidation for updated asset. Reason: ' . $e->getAwsErrorMessage());
-        }
-    }
-
 }
