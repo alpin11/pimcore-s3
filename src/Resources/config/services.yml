@@ -11,6 +11,7 @@ services:
         arguments:
             - '@PimcoreS3Bundle\Service\CloudFrontService'
             - '@pimcore_s3.client.cloudfront'
+            - '%pimcore_s3.enable_cli_thumbnail_path_check%'
             - '%pimcore_s3.region%'
             - '%pimcore_s3.credentials.access_key_id%'
             - '%pimcore_s3.credentials.secret_access_key%'

@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->children()
                 ->scalarNode('bucket_name')->cannotBeEmpty()->end()
+                ->scalarNode('enable_cli_thumbnail_path_check')->defaultValue(true)->cannotBeEmpty()->end()
                 ->scalarNode('region')->defaultValue('eu-central-1')->cannotBeEmpty()->end()
                 ->arrayNode('credentials')
                     ->addDefaultsIfNotSet()

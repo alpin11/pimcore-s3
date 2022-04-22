@@ -15,11 +15,13 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 
 class AssetListener implements EventSubscriberInterface
 {
+    protected S3Client $s3Client;
+
     private CloudFrontService $cloudFrontService;
 
     protected CloudFrontClient $cloudFrontClient;
 
-    protected S3Client $s3Client;
+    private bool $enableCliThumbnailPathCheck;
 
     protected string $baseUrl;
 
@@ -40,6 +42,7 @@ class AssetListener implements EventSubscriberInterface
     /**
      * @param \PimcoreS3Bundle\Service\CloudFrontService $cloudFrontService
      * @param \PimcoreS3Bundle\Client\CloudFrontClient $cloudFrontClient
+     * @param bool $enableCliThumbnailPathCheck
      * @param string $region
      * @param string $accessKeyId
      * @param string $secretAccessKey
@@ -55,6 +58,7 @@ class AssetListener implements EventSubscriberInterface
     public function __construct(
         CloudFrontService $cloudFrontService,
         CloudFrontClient $cloudFrontClient,
+        bool $enableCliThumbnailPathCheck,
         string $region,
         string $accessKeyId,
         string $secretAccessKey,
@@ -67,12 +71,13 @@ class AssetListener implements EventSubscriberInterface
         bool $cdnEnabled = false,
         string $cdnDomain = null
     ) {
+        $this->cloudFrontClient = $cloudFrontClient;
         $this->cloudFrontService = $cloudFrontService;
+        $this->enableCliThumbnailPathCheck = $enableCliThumbnailPathCheck;
         $this->baseUrl = $baseUrl;
         $this->s3TmpUrlPrefix = $this->baseUrl . str_replace("s3:/", "", $tmpUrl);
         $this->s3AssetUrlPrefix = $this->baseUrl . str_replace("s3:/", "", $assetUrl);
         $this->cloudfrontEnabled = $cloudfrontEnabled;
-        $this->cloudFrontClient = $cloudFrontClient;
         $this->cloudfrontDistributionId = $cloudfrontDistributionId;
         $this->cdnEnabled = $cdnEnabled;
         $this->cdnDomain = $cdnDomain;
@@ -122,7 +127,7 @@ class AssetListener implements EventSubscriberInterface
             $key = str_replace("s3://" . $this->bucketName . "/", '', $fileSystemPath);
             if (!$this->s3Client->doesObjectExist($this->bucketName, $key)) {
 
-                if (PHP_SAPI === 'cli') {
+                if (PHP_SAPI === 'cli' && $this->enableCliThumbnailPathCheck) {
                     // cant pass to controller
                     $image = $subject->getAsset();
                     if ($image instanceof Asset\Image) {
