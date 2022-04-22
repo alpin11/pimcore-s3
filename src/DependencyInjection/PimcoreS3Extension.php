@@ -24,6 +24,7 @@ class PimcoreS3Extension extends Extension
         $tmpDirectory = $fileWrapperPrefix . '/tmp';
 
         $container->setParameter('pimcore_s3.bucket_name', $bucketName);
+        $container->setParameter('pimcore_s3.enable_cli_thumbnail_path_check', $config['enable_cli_thumbnail_path_check']);
         $container->setParameter('pimcore_s3.region', $region);
         $container->setParameter('pimcore_s3.file_wrapper_prefix', $fileWrapperPrefix);
         $container->setParameter('pimcore_s3.base_url', $s3BaseUrl);
