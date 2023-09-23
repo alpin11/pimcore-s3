@@ -2,6 +2,14 @@ services:
     _defaults:
         public: true
 
+    pimcore_s3.client.cloudfront:
+        class: PimcoreS3Bundle\Client\CloudFrontClient
+        arguments:
+            - '%pimcore_s3.cloudfront.client.version%'
+            - '%pimcore_s3.region%'
+            - '%pimcore_s3.credentials.access_key_id%'
+            - '%pimcore_s3.credentials.secret_access_key%'
+
     PimcoreS3Bundle\Service\CloudFrontService:
         arguments:
             - '@pimcore_s3.client.cloudfront'
@@ -25,11 +33,3 @@ services:
             - '%pimcore_s3.cdn.domain%'
         tags:
             - { name: kernel.event_subscriber }
-
-    pimcore_s3.client.cloudfront:
-        class: PimcoreS3Bundle\Client\CloudFrontClient
-        arguments:
-            - '%pimcore_s3.cloudfront.client.version%'
-            - '%pimcore_s3.region%'
-            - '%pimcore_s3.credentials.access_key_id%'
-            - '%pimcore_s3.credentials.secret_access_key%'
